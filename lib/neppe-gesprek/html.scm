@@ -31,7 +31,7 @@
   #:use-module (ice-9 iconv)
   #:use-module (ice-9 threads))
 
-(define (neppe-gesprek-html-template title body)
+(define* (neppe-gesprek-html-template #:key title body with-footer)
   `(html
     (head
      (title ,title)
@@ -46,20 +46,28 @@
             (content "width=device-width, initial-scale=1.0")))
      (script (@(src "https://cdn.tailwindcss.com")) "")
      (script (@(src "/js/tailwind.config.js")) ()))
-    (body (@(class "bg-stone-200"))
-          (div (@(class "container mx-auto my-4"))
-               ,@body
-               ,(page-footer)))))
+    (body
+     (div
+      ,@body
+      ,(cond
+        (with-footer (page-footer))
+        )))))
 
 
-
+;; (@(class "container mx-auto my-4 bg-stone-200"))
 (define-public (welcome-page)
   (neppe-gesprek-html-template
-   "neppe-gesprek"
-   `(html
+   #:title "neppe-gesprek"
+   #:body
+   `(div 
      (h2 (@(class "text-2xl font-bold text-stone-800")) "Neppe Gesprek")
      (div (@(class "w-full rounded-xl bg-stone-300 text-stone-800 p-4 flex flex-col gap-4 align-center my-6"))
-          (p "Welcome to Neppe Gesprek! Select one the options below to start a scene: ")))))
+          (p "Welcome to Neppe Gesprek! Select one the options below to start a scene: ")
+          (a (@(href "/chats")) (button (@(class "")) "chats"))
+          ))
+   #:with-footer #t))
+
+
 
 (define-public (page-footer)
   `((div (@(class "block text-center font-sans"))
@@ -77,3 +85,23 @@
          (p (@(class "mt-4"))
             (span (@(class "text-sm text-stone-700"))
                   "Neppe Gesprek means fake conversation in the Dutch language")))))
+
+;;(@(class "bg-stone-200"))
+(define-public (chat-page)
+  (neppe-gesprek-html-template
+   #:title "neppe-gesprek"
+   #:body
+   `(div 
+     (div (@(class "flex flex-col gap-1 justify-between"))
+          (div (@(class "flex flex-row gap-2"))
+               (a (@(href "/")) (span (@(class "text-xl font-bold")) "←"))
+               (img (@(class "w-12 h-12")(src "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2Fa6%2F58%2F32%2Fa65832155622ac173337874f02b218fb.png&f=1&nofb=1&ipt=6759468611bb44519226b27877175d505d1d4f6c3f01d2193037f56ce661b992&ipo=images")))
+               (p "Manon")
+               )
+          (div (@(class "bg-stone-200 min-h-24")) "")
+          (div
+           (input "")
+           (button (@(class "text-xl font-bold")) "→"))
+          )
+     )
+   #:with-footer #f))
