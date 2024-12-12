@@ -72,6 +72,7 @@
         (with-footer (page-footer))
         )))))
 
+(define scene-link/class "bg-green-200/50 p-3 text-black font-bold rounded-xl text-xl")
 
 ;; (@(class "container mx-auto my-4 bg-stone-200"))
 (define-public (welcome-page)
@@ -80,41 +81,65 @@
    #:body
    `(div 
      (div (@(class "container mx-auto my-4"))
-          (h2 (@(class "text-2xl font-bold text-stone-800")) "Neppe Gesprek")
-          (div (@(class "w-full rounded-xl bg-stone-300 text-stone-800 p-4 flex flex-col gap-4 align-center my-6"))
+          (h2 (@(class "text-2xl text-stone-800 font-bold")) "Neppe Gesprek")
+          (div (@(class "w-full rounded-xl bg-stone-200 text-stone-800 p-4 flex flex-col gap-4 align-center my-6"))
                (p (@(class "text-lg")) "Welcome to Neppe Gesprek! Select one the options below to start a scene: ")
-               (a (@(href "/chats?me=joe&you=manon&text-color=black&background-color=white")) (button (@(class "bg-green-700/50 p-1 text-white font-bold rounded-lg text-xl"))
-                                                                                                      "Joe chats with Manon"))
+               (div (@(class "flex flex-row flex-wrap gap-4"))
+                    (a (@(href "/chats?me=joe&you=manon&text-color=black&background-color=green&my-bubble-color=green"))
+                       (button (@(class ,scene-link/class))
+                               "Joe chats with Manon"))
+                    (a (@(href "/chats?me=manon&you=joe&text-color=black&background-color=pink&my-bubble-color=pink"))
+                       (button (@(class ,scene-link/class))
+                               "Manon chats with Joe")))
                )))
    #:with-footer #t))
 
+(define neppe-gesprek-people-names
+  `((manon . "Manon")
+    (joe . "Joe")))
+
+(define neppe-gesprek-people-avatars
+  `((manon . "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2Fa6%2F58%2F32%2Fa65832155622ac173337874f02b218fb.png&f=1&nofb=1&ipt=6759468611bb44519226b27877175d505d1d4f6c3f01d2193037f56ce661b992&ipo=images")
+    (joe . "")))
+
 ;;(@(class "bg-stone-200"))
 (define-public (chats-page rc)
-  (let ((background-color (get-from-qstr rc "background-color"))
-        (text-color (get-from-qstr rc "text-color"))
-        (me (get-from-qstr rc "me"))
-        (you (get-from-qstr rc "you"))
-        (avatar-for-manon "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2Fa6%2F58%2F32%2Fa65832155622ac173337874f02b218fb.png&f=1&nofb=1&ipt=6759468611bb44519226b27877175d505d1d4f6c3f01d2193037f56ce661b992&ipo=images")
-        )
+  (let* ((background-color (get-from-qstr rc "background-color"))
+         (text-color (get-from-qstr rc "text-color"))
+         (my-bubble-color (get-from-qstr rc "my-bubble-color"))
+         (me (get-from-qstr rc "me"))
+         (you (get-from-qstr rc "you"))
+         (your-name (assq-ref neppe-gesprek-people-names (string->symbol you)))
+         (my-bubble-class (format #f "rounded-xl p-4 m-2 text-lg align-right text-right text-white bg-~a-700/50" my-bubble-color))
+         (your-bubble-class (format #f "rounded-xl p-4 m-2 text-lg align-left text-left text-stone-800 bg-~a-200/75" "stone"))
+         )
     (neppe-gesprek-html-template
      #:title "neppe-gesprek"
      #:body
      `(div 
        (div (@(class "flex flex-col gap-1 justify-between"))
-            (div (@(class "flex flex-row gap-2"))
+            (div (@(class "flex flex-row gap-2 p-2 items-center"))
                  (a (@(href "/")) (span (@(class "text-xl font-bold")) "←"))
-                 (img (@(class "w-12 h-12")(src ,avatar-for-manon)))
-                 (p ,you)
+                 (img (@(class "w-12 h-12")(src ,(assq-ref neppe-gesprek-people-avatars (string->symbol you)))))
+                 (p (@(class "text-stone-800 text-xl")) ,your-name)
                  )
-            (div (@(class ,(format #f "bg-~a-200 min-h-24"
+            (div (@(class ,(format #f "bg-~a-200/75 min-h-24"
                                    background-color
                                    text-color)))
-                 (div (@(class "align-left text-stone-800 bg-stone-200/75")) ,you)
-                 (div (@(class "align-left text-stone-800 bg-green-700/50")) ,me)
+                 ,(cond
+                   ((and (eq? (string->symbol you) 'manon) (eq? (string->symbol me) 'joe))
+                    `((div (@(class ,your-bubble-class)) "have you washed the dishes Joe ☺️ ?")
+                      (div (@(class ,my-bubble-class)) "yes love, of course 💚")))
+                   
+                   ((and (eq? (string->symbol you) 'joe) (eq? (string->symbol me) 'manon))
+                    `((div (@(class ,my-bubble-class)) "have you washed the dishes Joe ☺️ ?")
+                      (div (@(class ,your-bubble-class)) "yes love, of course 💚"))))
                  )
-            (div
-             (input "")
-             (button (@(class "text-xl font-bold")) "→"))
+            
+            
+            (div (@(class "p-2 m-2"))
+                 (input (@(class "border-1 text-lg h-12")(placeholder "enter your message here...")) "")
+                 (button (@(class "text-xl font-bold")) "→"))
             )
        )
      #:with-footer #f)
