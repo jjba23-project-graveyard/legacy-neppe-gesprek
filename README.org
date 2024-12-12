@@ -1,4 +1,5 @@
 #+title: Neppe Gesprek
+#+options: toc:nil num:nil
 
 Neppe Gesprek (Dutch for *Fake Conversation*) allows film and television makers to stage scenes where chat software is being used.
 
