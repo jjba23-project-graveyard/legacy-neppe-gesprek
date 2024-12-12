@@ -31,6 +31,25 @@
   #:use-module (ice-9 iconv)
   #:use-module (ice-9 threads))
 
+(define-public (page-footer)
+  `((div (@(class "block text-center font-sans"))
+         (p (@(class "text-md text-stone-800"))
+            "Neppe Gesprek allows you to easily stage chat scenes.")
+         (p (@(class "text-md text-stone-800")) "This project is free software, licensed under the GNU General Public License v3 or later")
+         (div (@(class "mt-4 flex flex-row flex-wrap gap-4 justify-center align-center"))
+              (p (@(class "text-sm text-stone-800")) "find the source code here:")
+              (a (@(class "text-green-900 font-bold cursor-pointer text-sm")
+                  (href "https://codeberg.org/jjba23/neppe-gesprek"))
+                 "https://codeberg.org/jjba23/neppe-gesprek")
+              )
+         (p (@(class "mt-4"))
+            (em (@(class "text-md text-stone-700"))
+                "Copyright 2024 - Josep Bigorra"))
+         (p (@(class "mt-4"))
+            (span (@(class "text-sm text-stone-700"))
+                  "Neppe Gesprek means fake conversation in the Dutch language")))))
+
+
 (define* (neppe-gesprek-html-template #:key title body with-footer)
   `(html
     (head
@@ -60,48 +79,46 @@
    #:title "neppe-gesprek"
    #:body
    `(div 
-     (h2 (@(class "text-2xl font-bold text-stone-800")) "Neppe Gesprek")
-     (div (@(class "w-full rounded-xl bg-stone-300 text-stone-800 p-4 flex flex-col gap-4 align-center my-6"))
-          (p "Welcome to Neppe Gesprek! Select one the options below to start a scene: ")
-          (a (@(href "/chats")) (button (@(class "")) "chats"))
-          ))
+     (div (@(class "container mx-auto my-4"))
+          (h2 (@(class "text-2xl font-bold text-stone-800")) "Neppe Gesprek")
+          (div (@(class "w-full rounded-xl bg-stone-300 text-stone-800 p-4 flex flex-col gap-4 align-center my-6"))
+               (p (@(class "text-lg")) "Welcome to Neppe Gesprek! Select one the options below to start a scene: ")
+               (a (@(href "/chats?me=joe&you=manon&text-color=black&background-color=white")) (button (@(class "bg-green-700/50 p-1 text-white font-bold rounded-lg text-xl"))
+                                                                                                      "Joe chats with Manon"))
+               )))
    #:with-footer #t))
 
-
-
-(define-public (page-footer)
-  `((div (@(class "block text-center font-sans"))
-         (p (@(class "text-md text-stone-800")) "Neppe Gesprek allows you to easily stage chat scenes.")
-         (p (@(class "text-md text-stone-800")) "This project is free software, licensed under the GNU General Public License v3 or later")
-         (div (@(class "mt-4 flex flex-row flex-wrap gap-4 justify-center align-center"))
-              (p (@(class "text-sm text-stone-800")) "find the source code here:")
-              (a (@(class "text-green-900 font-bold cursor-pointer text-sm")
-                  (href "https://codeberg.org/jjba23/neppe-gesprek"))
-                 "https://codeberg.org/jjba23/neppe-gesprek")
-              )
-         (p (@(class "mt-4"))
-            (em (@(class "text-md text-stone-700"))
-                "Copyright 2024 - Josep Bigorra"))
-         (p (@(class "mt-4"))
-            (span (@(class "text-sm text-stone-700"))
-                  "Neppe Gesprek means fake conversation in the Dutch language")))))
-
 ;;(@(class "bg-stone-200"))
-(define-public (chat-page)
-  (neppe-gesprek-html-template
-   #:title "neppe-gesprek"
-   #:body
-   `(div 
-     (div (@(class "flex flex-col gap-1 justify-between"))
-          (div (@(class "flex flex-row gap-2"))
-               (a (@(href "/")) (span (@(class "text-xl font-bold")) "←"))
-               (img (@(class "w-12 h-12")(src "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2Fa6%2F58%2F32%2Fa65832155622ac173337874f02b218fb.png&f=1&nofb=1&ipt=6759468611bb44519226b27877175d505d1d4f6c3f01d2193037f56ce661b992&ipo=images")))
-               (p "Manon")
-               )
-          (div (@(class "bg-stone-200 min-h-24")) "")
-          (div
-           (input "")
-           (button (@(class "text-xl font-bold")) "→"))
-          )
-     )
-   #:with-footer #f))
+(define-public (chats-page rc)
+  (let ((background-color (get-from-qstr rc "background-color"))
+        (text-color (get-from-qstr rc "text-color"))
+        (me (get-from-qstr rc "me"))
+        (you (get-from-qstr rc "you"))
+        (avatar-for-manon "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2Fa6%2F58%2F32%2Fa65832155622ac173337874f02b218fb.png&f=1&nofb=1&ipt=6759468611bb44519226b27877175d505d1d4f6c3f01d2193037f56ce661b992&ipo=images")
+        )
+    (neppe-gesprek-html-template
+     #:title "neppe-gesprek"
+     #:body
+     `(div 
+       (div (@(class "flex flex-col gap-1 justify-between"))
+            (div (@(class "flex flex-row gap-2"))
+                 (a (@(href "/")) (span (@(class "text-xl font-bold")) "←"))
+                 (img (@(class "w-12 h-12")(src ,avatar-for-manon)))
+                 (p ,you)
+                 )
+            (div (@(class ,(format #f "bg-~a-200 min-h-24"
+                                   background-color
+                                   text-color)))
+                 (div (@(class "align-left text-stone-800 bg-stone-200/75")) ,you)
+                 (div (@(class "align-left text-stone-800 bg-green-700/50")) ,me)
+                 )
+            (div
+             (input "")
+             (button (@(class "text-xl font-bold")) "→"))
+            )
+       )
+     #:with-footer #f)
+    ))
+
+
+

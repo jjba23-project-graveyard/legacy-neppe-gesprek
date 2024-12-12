@@ -22,4 +22,5 @@
 (get "/chats"
      #:mime 'xml
      (lambda (rc)
-       (response-emit (:mime rc (chat-page)))))
+       (response-emit (:mime rc (chats-page rc)))
+       ))
